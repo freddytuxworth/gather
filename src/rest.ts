@@ -12,10 +12,8 @@ import {
 
 import {UUIDType} from "zkgroup/dist/zkgroup/internal/UUIDUtil";
 import ProfileKeyCredentialRequest from "zkgroup/dist/zkgroup/profiles/ProfileKeyCredentialRequest";
-import GatherServer, {GatherResponse} from "./server";
+import {GatherResponse} from "./server";
 import {
-    GatherError,
-    GatherRequest,
     GEventMemberRole,
     IGatherRequest,
     IGAuthCredentialResponse,
@@ -30,71 +28,6 @@ import {construct, deconstruct} from "./util";
 export type GatherTransport = {
     doRequest: <T extends GatherResponse>(request: IGatherRequest) => Promise<T>
 };
-
-export function serializingLayer(transport: GatherTransport): GatherTransport {
-    return {
-        doRequest: async <T extends GatherResponse>(request: IGatherRequest) => {
-            const serialized = GatherRequest.encode(request).finish();
-            const deserialized = GatherRequest.decode(serialized);
-            return transport.doRequest(deserialized);
-        }
-
-    }
-}
-
-export function localTransport(server: GatherServer): GatherTransport {
-    return {
-        doRequest: async <T extends GatherResponse>(request: IGatherRequest) => {
-            const response = await server.handleRequest(request);
-            if (response instanceof GatherError)
-                throw new Error(response.error);
-            return response as T;
-        }
-    }
-}
-
-//
-// export class GatherHttpTransport implements GatherTransport {
-//     private readonly apiClient: AxiosInstance;
-//
-//     constructor(baseUrl: string) {
-//         this.apiClient = axios.create({
-//             baseURL: baseUrl,
-//             responseType: 'json',
-//             headers: {
-//                 'Content-Type': 'application/json'
-//             }
-//         });
-//     }
-//
-//     private static decodeResponseForRequest(request: IGatherRequest, response: Uint8Array): GatherResponse {
-//         const result =
-//         if (request.getPublicParamsRequest)
-//             return GServerInfo.decode(response);
-//         if (request.createUserRequest)
-//             return GOperationResult.decode(response);
-//         if (request.authCredentialRequest)
-//             return GAuthCredentialResponse.decode(response);
-//         if (request.profileKeyCredentialRequest)
-//             return GProfileKeyCredentialResponse.decode(response);
-//         if (request.createEventRequest)
-//             return GOperationResult.decode(response);
-//         if (request.fetchEventRequest)
-//             return GEventRecord.decode(response);
-//         if (request.addEventMemberRequest)
-//             return GOperationResult.decode(response);
-//         if (request.setEventMemberStateRequest)
-//             return GOperationResult.decode(response);
-//         throw new Error("Didn't know what response to expect.");
-//     }
-//
-//     doRequest<T extends GatherResponse>(request: IGatherRequest): Promise<T> {
-//         const encoded = GatherRequest.encode(request).finish();
-//         return this.apiClient.post<Uint8Array>("/api", encoded, {responseType: "arraybuffer"})
-//             .then(response => response.data)
-//             .then(data => GatherHttpTransport.decodeResponseForRequest(request, data) as unknown as T);
-//     }
-// }
 
 export class GatherClient {
 

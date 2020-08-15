@@ -1,6 +1,6 @@
 import GatherServer from "../src/server";
 import {deconstruct, hashString, nowRedemptionTime, randomCompatArray, usernameToUuid} from "../src/util";
-import {GatherClient, localTransport, serializingLayer} from "../src/rest";
+import {GatherClient} from "../src/rest";
 import {
     AuthCredential,
     ClientZkAuthOperations,
@@ -13,10 +13,10 @@ import {
     ServerSecretParams
 } from "zkgroup";
 import {GEventMemberRole} from "../src/messages";
-import {InMemoryStorage} from "../src/storage";
 import chai, {expect} from "chai";
 import {randomBytes} from "crypto";
 import chaiAsPromised from "chai-as-promised";
+import {InMemoryStorage, localTransport, serializingLayer} from "../src/testing_implementations";
 
 chai.use(chaiAsPromised);
 
@@ -26,7 +26,7 @@ describe("Integration Tests", () => {
     const server = new GatherServer(storage);
 
     const transport = serializingLayer(localTransport(server));
-    // const transport = localTransport(server);
+
     const client = new GatherClient(transport);
     let serverPublicParams: ServerPublicParams;
     let authOperations: ClientZkAuthOperations;

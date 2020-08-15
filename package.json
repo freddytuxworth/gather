@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build-proto": "pbjs -t static-module -w commonjs -o src/messages.js src/messages.proto && pbts -o src/messages.d.ts src/messages.js",
-    "test": "nyc mocha -r ts-node/register tests/*"
+    "test": "nyc mocha -r ts-node/register test/*"
   },
   "author": "",
   "license": "ISC",
