@@ -29,10 +29,6 @@ message GatherError {
   required string error = 1;
 }
 
-message ZkUUID {
-  required string content = 1;
-}
-
 message ZkServerPublicParams {
   required bytes content = 1;
 }
@@ -61,19 +57,19 @@ message GProfileRecord {
 }
 
 message GUserRecord {
-  required ZkUUID uuid = 1;
+  required string uuid = 1;
   required bytes passwordHash = 2;
   required GProfileRecord profile = 3;
 }
 
 message GCreateUserRequest {
-  required ZkUUID uuid = 1;
+  required string uuid = 1;
   required bytes passwordHash = 2;
   required GProfileRecord profile = 3;
 }
 
 message GAuthCredentialRequest {
-  required ZkUUID uuid = 1;
+  required string uuid = 1;
   required bytes passwordHash = 2;
 }
 
@@ -89,7 +85,7 @@ message GProfileKeyCredentialRequest {
   message ZkProfileKeyCredentialRequest {
     required bytes content = 1;
   }
-  required ZkUUID uuid = 1;
+  required string uuid = 1;
   required ZkProfileKeyVersion profileKeyVersion = 2;
   required ZkProfileKeyCredentialRequest profileKeyCredentialRequest = 3;
 }

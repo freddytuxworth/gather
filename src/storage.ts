@@ -50,7 +50,7 @@ export class InMemoryStorage implements GatherStorage {
     }
 
     async findUserByUuid(uuid: string) {
-        const user = this.users.find(user => user.uuid.content === uuid);
+        const user = this.users.find(user => user.uuid === uuid);
         if(user === undefined)
             throw new Error("User not found");
         return user;

@@ -111,10 +111,7 @@ export class GatherClient {
 
     async getAuthCredential(uuid: UUIDType, passwordHash: Buffer): Promise<AuthCredentialResponse> {
         const rawResponse = await this.transport.doRequest<IGAuthCredentialResponse>({
-            authCredentialRequest: {
-                uuid: {content: uuid},
-                passwordHash
-            }
+            authCredentialRequest: {uuid, passwordHash}
         });
 
         return construct(rawResponse.authCredentialResponse, AuthCredentialResponse);
@@ -130,7 +127,7 @@ export class GatherClient {
                      profile: { content: Uint8Array, key: ProfileKey }) {
         return await this.transport.doRequest<IGOperationResult>({
             createUserRequest: {
-                uuid: {content: uuid},
+                uuid,
                 passwordHash,
                 profile: {
                     content: profile.content,
@@ -147,7 +144,7 @@ export class GatherClient {
     ): Promise<ProfileKeyCredentialResponse> {
         const rawResponse = await this.transport.doRequest<IGProfileKeyCredentialResponse>({
             profileKeyCredentialRequest: {
-                uuid: {content: uuid},
+                uuid,
                 profileKeyVersion: {content: deconstruct(profileKeyVersion)},
                 profileKeyCredentialRequest: {content: deconstruct(profileKeyCredentialRequest)}
             }

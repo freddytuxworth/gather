@@ -107,7 +107,7 @@ export default class GatherServer implements GatherServerApi {
     }
 
     async createUser(request: IGCreateUserRequest) {
-        const userExists = await this.storage.findUserByUuid(request.uuid.content).then(() => true).catch(() => false);
+        const userExists = await this.storage.findUserByUuid(request.uuid).then(() => true).catch(() => false);
         if (userExists)
             throw new Error("UUID already exists");
         await this.storage.addUser(new GUserRecord({...request}));
@@ -123,7 +123,7 @@ export default class GatherServer implements GatherServerApi {
     }
 
     async getAuthCredential(request: IGAuthCredentialRequest) {
-        const user = await this.storage.findUserByUuid(request.uuid.content);
+        const user = await this.storage.findUserByUuid(request.uuid);
         if (user === undefined)
             throw new ZkGroupError("User not found");
         if (!typedArraysEqual(user.passwordHash, request.passwordHash))
@@ -132,13 +132,13 @@ export default class GatherServer implements GatherServerApi {
         return new GAuthCredentialResponse({
             authCredentialResponse: {
                 content: deconstruct(
-                    this.zkAuthOperations.issueAuthCredential(request.uuid.content, nowRedemptionTime()))
+                    this.zkAuthOperations.issueAuthCredential(request.uuid, nowRedemptionTime()))
             }
         });
     }
 
     async getProfileKeyCredential(request: IGProfileKeyCredentialRequest) {
-        const user = await this.storage.findUserByUuid(request.uuid.content);
+        const user = await this.storage.findUserByUuid(request.uuid);
 
         if (!typedArraysEqual(user.profile.profileKeyVersion.content, request.profileKeyVersion.content))
             throw new ZkGroupError("User profile key not correct");
@@ -148,7 +148,7 @@ export default class GatherServer implements GatherServerApi {
 
         //TODO: does this verify the PoK in the ProfileKeyCredentialRequest?
         const profileKeyCredentialResponse = this.zkProfileOperations.issueProfileKeyCredential(pKCR,
-            request.uuid.content, pKC);
+            request.uuid, pKC);
 
         return new GProfileKeyCredentialResponse({
             profileKeyCredentialResponse: {
