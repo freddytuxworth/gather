@@ -9,7 +9,6 @@ import {
     ServerZkProfileOperations,
     UuidCiphertext
 } from "zkgroup";
-import ZkGroupError from "zkgroup/dist/zkgroup/errors/ZkGroupError";
 
 import {
     areEqual,
@@ -18,6 +17,7 @@ import {
     maybeConstruct,
     nowRedemptionTime,
     operationSuccess,
+    SubType,
     typedArraysEqual
 } from "./util";
 import {
@@ -33,34 +33,23 @@ import {
     IGAddEventMemberRequest,
     IGatherRequest,
     IGAuthCredentialRequest,
-    IGAuthCredentialResponse,
     IGCreateEventRequest,
     IGCreateUserRequest,
     IGEventMemberRecord,
     IGEventRecord,
     IGFetchEventRequest,
-    IGOperationResult,
     IGProfileKeyCredentialRequest,
-    IGProfileKeyCredentialResponse,
-    IGServerInfo,
     IGSetEventMemberStateRequest,
 } from "./messages";
 
 import ProfileKeyCredentialRequest from "zkgroup/dist/zkgroup/profiles/ProfileKeyCredentialRequest";
-import {GatherStorage} from "./storage";
-import {GAuthCredentialPresentation, GGroupIdentifier, GProfileKeyCredentialPresentation} from "./types";
-
-export type GatherResponse =
-    {}
-    | IGOperationResult
-    | IGServerInfo
-    | IGAuthCredentialResponse
-    | IGProfileKeyCredentialResponse
-    | IGEventRecord;
-
-type SubType<Base, Condition> = Pick<Base, {
-    [Key in keyof Base]: Base[Key] extends Condition ? Key : never
-}[keyof Base]>;
+import {
+    GatherResponse,
+    GatherStorage,
+    GAuthCredentialPresentation,
+    GGroupIdentifier,
+    GProfileKeyCredentialPresentation
+} from "./types";
 
 type GatherServerApi = SubType<GatherService, (...args: any[]) => Promise<any>>
 
@@ -120,9 +109,9 @@ export default class GatherServer implements GatherServerApi {
     async getAuthCredential(request: IGAuthCredentialRequest) {
         const user = await this.storage.findUserByUuid(request.uuid);
         if (user === undefined)
-            throw new ZkGroupError("User not found");
+            throw new Error("User not found");
         if (!typedArraysEqual(user.passwordHash, request.passwordHash))
-            throw new ZkGroupError("Authentication failed.");
+            throw new Error("Authentication failed.");
 
         return new GAuthCredentialResponse({
             authCredentialResponse: deconstruct(
@@ -134,7 +123,7 @@ export default class GatherServer implements GatherServerApi {
         const user = await this.storage.findUserByUuid(request.uuid);
 
         if (!typedArraysEqual(user.profile.profileKeyVersion, request.profileKeyVersion))
-            throw new ZkGroupError("User profile key not correct");
+            throw new Error("User profile key not correct");
 
         const pKCR = construct(request.profileKeyCredentialRequest, ProfileKeyCredentialRequest)
         const pKC = construct(user.profile.profileKeyCommitment, ProfileKeyCommitment);
@@ -164,7 +153,7 @@ export default class GatherServer implements GatherServerApi {
 
         if (!profileKeyCredentialPresentations.some(
             pKCP => areEqual(pKCP.getUuidCiphertext(), creatorAuthCredentialPresentation.getUuidCiphertext())))
-            throw new ZkGroupError('Creator UUID ciphertext is not present in initial members list.');
+            throw new Error('Creator UUID ciphertext is not present in initial members list.');
 
         await this.storage.addEvent({
             groupIdentifier: deconstruct(groupPublicParams.getGroupIdentifier()),
@@ -180,11 +169,11 @@ export default class GatherServer implements GatherServerApi {
                                     authCredentialPresentation: GAuthCredentialPresentation) {
         const event = await this.storage.findEventByIdentifier(groupIdentifier);
         if (event === undefined)
-            throw new ZkGroupError('No such event');
+            throw new Error('No such event');
 
-        const member = this.findEventMemberForAuthCredentialPresentation(event, authCredentialPresentation);
+        const member = GatherServer.findEventMemberForAuthCredentialPresentation(event, authCredentialPresentation);
         if (member === undefined)
-            throw new ZkGroupError("User is not in group.");
+            throw new Error("User is not in group.");
 
         return {event, member: new GEventMemberRecord(member)};
     }
@@ -192,7 +181,7 @@ export default class GatherServer implements GatherServerApi {
     async fetchEvent(request: IGFetchEventRequest) {
         const {event} = await this.authAsEventMember(request.groupIdentifier, request.authCredentialPresentation);
         if (event === undefined)
-            throw new ZkGroupError('Group could not be fetched.');
+            throw new Error('Group could not be fetched.');
         return new GEventRecord(event);
     }
 
@@ -201,20 +190,20 @@ export default class GatherServer implements GatherServerApi {
         return member.role == GEventMemberRole.CREATOR;
     }
 
-    private findEventMemberForUUIDCiphertext(event: IGEventRecord, uuidCiphertext: UuidCiphertext) {
+    private static findEventMemberForUUIDCiphertext(event: IGEventRecord, uuidCiphertext: UuidCiphertext) {
         return event.members?.find(
             member => areEqual(construct(member.profileKeyCredentialPresentation, ProfileKeyCredentialPresentation)
                 .getUuidCiphertext(), uuidCiphertext))
     }
 
-    private findEventMemberForAuthCredentialPresentation(event: IGEventRecord,
+    private static findEventMemberForAuthCredentialPresentation(event: IGEventRecord,
                                                          authCredentialPresentation: AuthCredentialPresentation | GAuthCredentialPresentation) {
         return this.findEventMemberForUUIDCiphertext(event,
             maybeConstruct(authCredentialPresentation, AuthCredentialPresentation)
                 .getUuidCiphertext())
     }
 
-    private findEventMemberForProfileKeyCredentialPresentation(event: IGEventRecord,
+    private static findEventMemberForProfileKeyCredentialPresentation(event: IGEventRecord,
                                                                profileKeyCredentialPresentation: ProfileKeyCredentialPresentation | GProfileKeyCredentialPresentation) {
         return this.findEventMemberForUUIDCiphertext(event,
             maybeConstruct(profileKeyCredentialPresentation, ProfileKeyCredentialPresentation)
@@ -231,14 +220,14 @@ export default class GatherServer implements GatherServerApi {
             newMemberProfileKeyCredentialPresentation);
 
 
-        const addingMember = this.findEventMemberForAuthCredentialPresentation(event,
+        const addingMember = GatherServer.findEventMemberForAuthCredentialPresentation(event,
             request.authCredentialPresentation);
         if (addingMember == undefined || !GatherServer.canAddMembers(event, addingMember))
-            throw new ZkGroupError("User cannot add members to this group");
+            throw new Error("User cannot add members to this group");
 
-        if (this.findEventMemberForProfileKeyCredentialPresentation(event,
+        if (GatherServer.findEventMemberForProfileKeyCredentialPresentation(event,
             request.newMemberProfileKeyCredentialPresentation) !== undefined)
-            throw new ZkGroupError("User is already a member of this group");
+            throw new Error("User is already a member of this group");
 
 
         event.members?.push({

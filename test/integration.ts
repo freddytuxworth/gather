@@ -16,7 +16,7 @@ import {GEventMemberRole} from "../src/messages";
 import chai, {expect} from "chai";
 import {randomBytes} from "crypto";
 import chaiAsPromised from "chai-as-promised";
-import {InMemoryStorage, localTransport, serializingLayer} from "../src/testing_implementations";
+import {InMemoryStorage, localTransport, serializingLayer} from "./testing_implementations";
 
 chai.use(chaiAsPromised);
 

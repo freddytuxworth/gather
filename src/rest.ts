@@ -12,10 +12,8 @@ import {
 
 import {UUIDType} from "zkgroup/dist/zkgroup/internal/UUIDUtil";
 import ProfileKeyCredentialRequest from "zkgroup/dist/zkgroup/profiles/ProfileKeyCredentialRequest";
-import {GatherResponse} from "./server";
 import {
     GEventMemberRole,
-    IGatherRequest,
     IGAuthCredentialResponse,
     IGEventMemberRecord,
     IGEventRecord,
@@ -24,10 +22,7 @@ import {
     IGServerInfo
 } from "./messages";
 import {construct, deconstruct} from "./util";
-
-export type GatherTransport = {
-    doRequest: <T extends GatherResponse>(request: IGatherRequest) => Promise<T>
-};
+import {GatherTransport} from "./types";
 
 export class GatherClient {
 
@@ -36,11 +31,6 @@ export class GatherClient {
     constructor(transport: GatherTransport) {
         this.transport = transport;
     }
-
-    // private async fetchTyped<K extends keyof GatherOperationResponse>(request: GatherRequest, field: K) {
-    //     const rawResponse = await this.transport.doRequest(request);
-    //     return rawResponse[field];
-    // }
 
     async getAuthCredential(uuid: UUIDType, passwordHash: Buffer): Promise<AuthCredentialResponse> {
         const rawResponse = await this.transport.doRequest<IGAuthCredentialResponse>({

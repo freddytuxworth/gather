@@ -1,6 +1,42 @@
+import {
+    GEventRecord,
+    google, GUserRecord, IGatherRequest,
+    IGAuthCredentialResponse,
+    IGEventRecord,
+    IGOperationResult,
+    IGProfileKeyCredentialResponse,
+    IGServerInfo, IGUserRecord
+} from "./messages";
+import IEmpty = google.protobuf.IEmpty;
+import {ServerSecretParams} from "zkgroup";
+
 export type GAuthCredentialPresentation = Uint8Array;
 export type GGroupIdentifier = Uint8Array;
 export type GProfileKeyCredentialPresentation = Uint8Array;
+
+export type GatherResponse =
+    IEmpty
+    | IGOperationResult
+    | IGServerInfo
+    | IGAuthCredentialResponse
+    | IGProfileKeyCredentialResponse
+    | IGEventRecord;
+
+export type GatherStorage = {
+    saveSecretParams: (secretParams: ServerSecretParams) => Promise<void>,
+    getSecretParams: () => ServerSecretParams,
+    findUserByUuid: (uuid: string) => Promise<GUserRecord>,
+    addUser: (newUser: IGUserRecord | GUserRecord) => Promise<void>,
+    findEventByIdentifier: (identifier: GGroupIdentifier) => Promise<GEventRecord>,
+    addEvent: (newEvent: IGEventRecord | GEventRecord) => Promise<void>
+    updateEvent: (identifier: GGroupIdentifier,
+                  newEvent: IGEventRecord | GEventRecord) => Promise<void>
+}
+
+export type GatherTransport = {
+    doRequest: <T extends GatherResponse>(request: IGatherRequest) => Promise<T>
+};
+
 
 // import {
 //     AuthCredential,

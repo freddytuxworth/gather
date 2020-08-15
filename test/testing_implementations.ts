@@ -7,12 +7,11 @@ import {
     IGatherRequest,
     IGEventRecord,
     IGUserRecord
-} from "./messages";
-import {GGroupIdentifier} from "./types";
-import {typedArraysEqual} from "./util";
-import {GatherStorage} from "./storage";
-import GatherServer, {GatherResponse} from "./server";
-import {GatherTransport} from "./rest";
+} from "../src/messages";
+import {GatherResponse, GatherStorage, GGroupIdentifier} from "../src/types";
+import {typedArraysEqual} from "../src/util";
+import {GatherTransport} from "../src/types";
+import GatherServer from "../src/server";
 
 export function serializingLayer(transport: GatherTransport): GatherTransport {
     return {
