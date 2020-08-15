@@ -18,7 +18,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "mocha": "^8.1.1",
-    "protobufjs": "github:protobufjs/protobuf.js",
+    "protobufjs": "^6.10.1",
     "source-map-support": "^0.5.19",
     "zkgroup": "https://github.com/signalapp/signal-zkgroup-node/"
   },
