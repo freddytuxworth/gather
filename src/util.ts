@@ -2,45 +2,35 @@ import {createHash, randomBytes} from "crypto";
 import {ByteArray, FFICompatArray, FFICompatArrayType, fromUUID, toUUID} from "zkgroup";
 import {UUID_LENGTH, UUIDType} from "zkgroup/dist/zkgroup/internal/UUIDUtil";
 import TypedArray = NodeJS.TypedArray;
-import { GOperationResult } from "./messages";
+import {GOperationResult} from "./messages";
 
 export const operationSuccess: GOperationResult = new GOperationResult({success: true, err: undefined});
 
-
-export function hashString(input: string): Buffer {
-    const hash = createHash('sha256');
-    ;
-    hash.update(input);
-    return hash.digest();
-}
+export const hashString = (input: string) => createHash('sha256').update(input).digest();
 
 export const toFFI = (b: Uint8Array) => new FFICompatArray(Buffer.from(b));
 
 export const fromFFI = (f: FFICompatArrayType) => new Uint8Array(f.buffer);
 
-
-
-// export const construct = <T extends ByteArray>(v: Uint8Array, T: new (...args: any[]) => T): T => new T(v);
-export const construct = <T extends ByteArray, Z extends Uint8Array | {content: Uint8Array}>(v: Z, C: new (a: FFICompatArrayType) => T): T =>
-    v instanceof Uint8Array ? new C(toFFI(v as Uint8Array)) : new C(toFFI((v as {content: Uint8Array}).content));
+export const construct = <T extends ByteArray, Z extends Uint8Array | { content: Uint8Array }>(v: Z,
+                                                                                               C: new (a: FFICompatArrayType) => T): T =>
+    v instanceof Uint8Array ? new C(toFFI(v as Uint8Array)) : new C(toFFI((v as { content: Uint8Array }).content));
 
 export const deconstruct = <T extends ByteArray>(v: T): Uint8Array => fromFFI(v.contents);
 
-export const maybeConstruct = <T extends ByteArray>(v: Uint8Array | {content: Uint8Array} | T, C: new (a: FFICompatArrayType) => T): T =>
-    v instanceof C ? v as T : construct(v as Uint8Array | {content: Uint8Array}, C);
+export const maybeConstruct = <T extends ByteArray>(v: Uint8Array | { content: Uint8Array } | T,
+                                                    C: new (a: FFICompatArrayType) => T): T =>
+    v instanceof C ? v as T : construct(v as Uint8Array | { content: Uint8Array }, C);
 
-export const maybeDeconstruct = <T extends ByteArray, Z extends {content: Uint8Array} | Uint8Array | T>(v: Z): Uint8Array =>
-        v instanceof Uint8Array ? v as Uint8Array :
-            (v as {content: Uint8Array}).content !== undefined ? (v as {content: Uint8Array}).content :
-                deconstruct(v as T);
-
+export const maybeDeconstruct = <T extends ByteArray, Z extends { content: Uint8Array } | Uint8Array | T>(v: Z): Uint8Array =>
+    v instanceof Uint8Array ? v as Uint8Array :
+        (v as { content: Uint8Array }).content !== undefined ? (v as { content: Uint8Array }).content :
+            deconstruct(v as T);
 
 export const typedArraysEqual = (a: TypedArray, b: TypedArray) => a.byteLength == b.byteLength &&
     a.every((v: number, i: number) => b[i] == v);
 
 export const areEqual = (a: ByteArray, b: ByteArray) => a.contents.buffer.compare(b.contents.buffer) == 0;
-
-export const uuidsEqual = (a: UUIDType, b: UUIDType) => fromUUID(a).buffer.compare(fromUUID(b).buffer) == 0;
 
 export const randomCompatArray = (size: number) => new FFICompatArray(randomBytes(size));
 
