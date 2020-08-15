@@ -1,3 +1,7 @@
+export type GAuthCredentialPresentation = Uint8Array;
+export type GGroupIdentifier = Uint8Array;
+export type GProfileKeyCredentialPresentation = Uint8Array;
+
 // import {
 //     AuthCredential,
 //     AuthCredentialPresentation, ClientZkAuthOperations,

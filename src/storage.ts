@@ -1,6 +1,7 @@
-import {GEventRecord, GUserRecord, IGEventRecord, IGUserRecord, IZkGroupIdentifier} from "./messages";
+import {GEventRecord, GUserRecord, IGEventRecord, IGUserRecord} from "./messages";
 import {GroupIdentifier, ServerSecretParams} from "zkgroup";
 import {maybeDeconstruct, typedArraysEqual} from "./util";
+import {GGroupIdentifier} from "./types";
 
 /**
  * Interface providing persistent storage for Gather service data.
@@ -11,9 +12,9 @@ export type GatherStorage = {
     getSecretParams: () => ServerSecretParams,
     findUserByUuid: (uuid: string) => Promise<GUserRecord>,
     addUser: (newUser: IGUserRecord | GUserRecord) => Promise<void>,
-    findEventByIdentifier: (identifier: GroupIdentifier | IZkGroupIdentifier) => Promise<GEventRecord>,
+    findEventByIdentifier: (identifier: GGroupIdentifier) => Promise<GEventRecord>,
     addEvent: (newEvent: IGEventRecord | GEventRecord) => Promise<void>
-    updateEvent: (identifier: GroupIdentifier | IZkGroupIdentifier,
+    updateEvent: (identifier: GGroupIdentifier,
                   newEvent: IGEventRecord | GEventRecord) => Promise<void>
 }
 
@@ -41,10 +42,9 @@ export class InMemoryStorage implements GatherStorage {
         this.users.push(newUser instanceof GUserRecord ? newUser : new GUserRecord(newUser));
     }
 
-    async findEventByIdentifier(identifier: GroupIdentifier | IZkGroupIdentifier) {
-        const groupIdentifierContent = maybeDeconstruct(identifier);
+    async findEventByIdentifier(identifier: GGroupIdentifier) {
         const event = this.events.find(
-            event => typedArraysEqual(event.groupIdentifier.content, groupIdentifierContent));
+            event => typedArraysEqual(event.groupIdentifier, identifier));
         if (event === undefined)
             throw new Error("Event not found");
         return event;
@@ -61,10 +61,9 @@ export class InMemoryStorage implements GatherStorage {
         this.secretParams = secretParams;
     }
 
-    async updateEvent(identifier: GroupIdentifier | IZkGroupIdentifier, newEvent: IGEventRecord | GEventRecord) {
-        const groupIdentifierContent = maybeDeconstruct(identifier);
+    async updateEvent(identifier: GGroupIdentifier, newEvent: IGEventRecord | GEventRecord) {
         const index = this.events.findIndex(
-            event => typedArraysEqual(event.groupIdentifier.content, groupIdentifierContent));
+            event => typedArraysEqual(event.groupIdentifier, identifier));
         if (index < 0)
             throw new Error("Event not found.");
         this.events[index] = newEvent instanceof GEventRecord ? newEvent : new GEventRecord(newEvent);

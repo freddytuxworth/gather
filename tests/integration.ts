@@ -95,7 +95,7 @@ describe("Integration Tests", () => {
             groupSecretParams, user1.profileKeyCredential as ProfileKeyCredential);
         const response = await client.createEvent(groupPublicParams, groupContent, authCredentialPresentation, [
             {
-                profileKeyCredentialPresentation: {content: deconstruct(profileKeyCredentialPresentation)},
+                profileKeyCredentialPresentation: deconstruct(profileKeyCredentialPresentation),
                 role: GEventMemberRole.CREATOR,
                 state: randomBytes(50)
             }
@@ -107,7 +107,7 @@ describe("Integration Tests", () => {
             user1.authCredential as AuthCredential);
 
         const response = await client.fetchEvent(groupPublicParams.getGroupIdentifier(), authCredentialPresentation);
-        expect(response.groupIdentifier.content).to.deep.equal(deconstruct(groupPublicParams.getGroupIdentifier()));
+        expect(response.groupIdentifier).to.deep.equal(deconstruct(groupPublicParams.getGroupIdentifier()));
         expect(response.members).to.not.be.undefined;
         expect(response.members?.length).to.equal(1);
         expect(response.members?.[0].role).to.equal(GEventMemberRole.CREATOR);

@@ -1,6 +1,5 @@
 import {
     AuthCredentialPresentation,
-    GroupIdentifier,
     GroupPublicParams,
     ProfileKeyCommitment,
     ProfileKeyCredentialPresentation,
@@ -17,7 +16,6 @@ import {
     construct,
     deconstruct,
     maybeConstruct,
-    maybeDeconstruct,
     nowRedemptionTime,
     operationSuccess,
     typedArraysEqual
@@ -46,12 +44,11 @@ import {
     IGProfileKeyCredentialResponse,
     IGServerInfo,
     IGSetEventMemberStateRequest,
-    IZkAuthCredentialPresentation,
-    IZkGroupIdentifier,
-    IZkProfileKeyCredentialPresentation
 } from "./messages";
+
 import ProfileKeyCredentialRequest from "zkgroup/dist/zkgroup/profiles/ProfileKeyCredentialRequest";
 import {GatherStorage} from "./storage";
+import {GAuthCredentialPresentation, GGroupIdentifier, GProfileKeyCredentialPresentation} from "./types";
 
 export type GatherResponse =
     {}
@@ -116,9 +113,7 @@ export default class GatherServer implements GatherServerApi {
 
     async getPublicParams() {
         return new GServerInfo({
-            publicParams: {
-                content: maybeDeconstruct(this.publicParams)
-            }
+            publicParams: deconstruct(this.publicParams)
         });
     }
 
@@ -130,17 +125,15 @@ export default class GatherServer implements GatherServerApi {
             throw new ZkGroupError("Authentication failed.");
 
         return new GAuthCredentialResponse({
-            authCredentialResponse: {
-                content: deconstruct(
-                    this.zkAuthOperations.issueAuthCredential(request.uuid, nowRedemptionTime()))
-            }
+            authCredentialResponse: deconstruct(
+                this.zkAuthOperations.issueAuthCredential(request.uuid, nowRedemptionTime()))
         });
     }
 
     async getProfileKeyCredential(request: IGProfileKeyCredentialRequest) {
         const user = await this.storage.findUserByUuid(request.uuid);
 
-        if (!typedArraysEqual(user.profile.profileKeyVersion.content, request.profileKeyVersion.content))
+        if (!typedArraysEqual(user.profile.profileKeyVersion, request.profileKeyVersion))
             throw new ZkGroupError("User profile key not correct");
 
         const pKCR = construct(request.profileKeyCredentialRequest, ProfileKeyCredentialRequest)
@@ -151,9 +144,7 @@ export default class GatherServer implements GatherServerApi {
             request.uuid, pKC);
 
         return new GProfileKeyCredentialResponse({
-            profileKeyCredentialResponse: {
-                content: deconstruct(profileKeyCredentialResponse)
-            }
+            profileKeyCredentialResponse: deconstruct(profileKeyCredentialResponse)
         });
     }
 
@@ -176,7 +167,7 @@ export default class GatherServer implements GatherServerApi {
             throw new ZkGroupError('Creator UUID ciphertext is not present in initial members list.');
 
         await this.storage.addEvent({
-            groupIdentifier: {content: deconstruct(groupPublicParams.getGroupIdentifier())},
+            groupIdentifier: deconstruct(groupPublicParams.getGroupIdentifier()),
             groupPublicParams: request.groupPublicParams,
             content: request.content,
             members: request.initialMembers
@@ -185,8 +176,8 @@ export default class GatherServer implements GatherServerApi {
         return operationSuccess;
     }
 
-    private async authAsEventMember(groupIdentifier: GroupIdentifier | IZkGroupIdentifier,
-                                    authCredentialPresentation: AuthCredentialPresentation | IZkAuthCredentialPresentation) {
+    private async authAsEventMember(groupIdentifier: GGroupIdentifier,
+                                    authCredentialPresentation: GAuthCredentialPresentation) {
         const event = await this.storage.findEventByIdentifier(groupIdentifier);
         if (event === undefined)
             throw new ZkGroupError('No such event');
@@ -217,14 +208,14 @@ export default class GatherServer implements GatherServerApi {
     }
 
     private findEventMemberForAuthCredentialPresentation(event: IGEventRecord,
-                                                         authCredentialPresentation: AuthCredentialPresentation | IZkAuthCredentialPresentation) {
+                                                         authCredentialPresentation: AuthCredentialPresentation | GAuthCredentialPresentation) {
         return this.findEventMemberForUUIDCiphertext(event,
             maybeConstruct(authCredentialPresentation, AuthCredentialPresentation)
                 .getUuidCiphertext())
     }
 
     private findEventMemberForProfileKeyCredentialPresentation(event: IGEventRecord,
-                                                               profileKeyCredentialPresentation: ProfileKeyCredentialPresentation | IZkProfileKeyCredentialPresentation) {
+                                                               profileKeyCredentialPresentation: ProfileKeyCredentialPresentation | GProfileKeyCredentialPresentation) {
         return this.findEventMemberForUUIDCiphertext(event,
             maybeConstruct(profileKeyCredentialPresentation, ProfileKeyCredentialPresentation)
                 .getUuidCiphertext())

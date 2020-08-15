@@ -29,12 +29,8 @@ message GatherError {
   required string error = 1;
 }
 
-message ZkServerPublicParams {
-  required bytes content = 1;
-}
-
 message GServerInfo {
-  required ZkServerPublicParams publicParams = 1;
+  required bytes publicParams = 1;
 }
 
 message GOperationResult {
@@ -42,18 +38,10 @@ message GOperationResult {
   optional string err = 2;
 }
 
-message ZkProfileKeyVersion {
-  required bytes content = 1;
-}
-
-message ZkProfileKeyCommitment {
-  required bytes content = 1;
-}
-
 message GProfileRecord {
   required bytes content = 1;
-  required ZkProfileKeyVersion profileKeyVersion = 2;
-  required ZkProfileKeyCommitment profileKeyCommitment = 3;
+  required bytes profileKeyVersion = 2;
+  required bytes profileKeyCommitment = 3;
 }
 
 message GUserRecord {
@@ -74,84 +62,58 @@ message GAuthCredentialRequest {
 }
 
 message GAuthCredentialResponse {
-  message ZkAuthCredentialResponse {
-    required bytes content = 1;
-  }
-  required ZkAuthCredentialResponse authCredentialResponse = 1;
+  required bytes authCredentialResponse = 1;
 }
 
 
 message GProfileKeyCredentialRequest {
-  message ZkProfileKeyCredentialRequest {
-    required bytes content = 1;
-  }
   required string uuid = 1;
-  required ZkProfileKeyVersion profileKeyVersion = 2;
-  required ZkProfileKeyCredentialRequest profileKeyCredentialRequest = 3;
+  required bytes profileKeyVersion = 2;
+  required bytes profileKeyCredentialRequest = 3;
 }
 
 
 message GProfileKeyCredentialResponse {
-  message ZkProfileKeyCredentialResponse {
-    required bytes content = 1;
-  }
-  required ZkProfileKeyCredentialResponse profileKeyCredentialResponse = 1;
-}
-
-message ZkProfileKeyCredentialPresentation {
-  required bytes content = 1;
+  required bytes profileKeyCredentialResponse = 1;
 }
 
 message GEventMemberRecord {
-  required ZkProfileKeyCredentialPresentation profileKeyCredentialPresentation = 1;
+  required bytes profileKeyCredentialPresentation = 1;
   required GEventMemberRole role = 2;
   optional bytes state = 3;
 }
 
-message ZkGroupPublicParams {
-  required bytes content = 1;
-}
-
-message ZkAuthCredentialPresentation {
-  required bytes content = 1;
-}
-
 message GCreateEventRequest {
-  required ZkGroupPublicParams groupPublicParams = 1;
+  required bytes groupPublicParams = 1;
   required bytes content = 2;
-  required ZkAuthCredentialPresentation authCredentialPresentation = 3;
+  required bytes authCredentialPresentation = 3;
   repeated GEventMemberRecord initialMembers = 4;
 }
 
-message ZkGroupIdentifier {
-  required bytes content = 1;
-}
-
 message GFetchEventRequest {
-  required ZkGroupIdentifier groupIdentifier = 1;
-  required ZkAuthCredentialPresentation authCredentialPresentation = 2;
+  required bytes groupIdentifier = 1;
+  required bytes authCredentialPresentation = 2;
 }
 
 message GEventRecord {
-  required ZkGroupIdentifier groupIdentifier = 1;
-  required ZkGroupPublicParams groupPublicParams = 2;
+  required bytes groupIdentifier = 1;
+  required bytes groupPublicParams = 2;
   required bytes content = 3;
   repeated GEventMemberRecord members = 4;
 }
 
 message GAddEventMemberRequest {
-  required ZkGroupIdentifier groupIdentifier = 1;
-  required ZkAuthCredentialPresentation authCredentialPresentation = 2;
-  required ZkProfileKeyCredentialPresentation newMemberProfileKeyCredentialPresentation = 3;
+  required bytes groupIdentifier = 1;
+  required bytes authCredentialPresentation = 2;
+  required bytes newMemberProfileKeyCredentialPresentation = 3;
   required GEventMemberRole newMemberRole = 4;
 }
 
 message GSetEventMemberStateRequest {
-  required ZkGroupIdentifier groupIdentifier = 1;
-  required ZkAuthCredentialPresentation authCredentialPresentation = 2;
+  required bytes groupIdentifier = 1;
+  required bytes authCredentialPresentation = 2;
   required bytes newState = 3;
 }
-
 
 enum GEventMemberAttendance {
   UNKNOWN = 0;

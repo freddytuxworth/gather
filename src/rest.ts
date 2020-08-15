@@ -131,8 +131,8 @@ export class GatherClient {
                 passwordHash,
                 profile: {
                     content: profile.content,
-                    profileKeyVersion: {content: deconstruct(profile.key.getProfileKeyVersion(uuid))},
-                    profileKeyCommitment: {content: deconstruct(profile.key.getCommitment(uuid))}
+                    profileKeyVersion: deconstruct(profile.key.getProfileKeyVersion(uuid)),
+                    profileKeyCommitment: deconstruct(profile.key.getCommitment(uuid))
                 }
             }
         });
@@ -145,8 +145,8 @@ export class GatherClient {
         const rawResponse = await this.transport.doRequest<IGProfileKeyCredentialResponse>({
             profileKeyCredentialRequest: {
                 uuid,
-                profileKeyVersion: {content: deconstruct(profileKeyVersion)},
-                profileKeyCredentialRequest: {content: deconstruct(profileKeyCredentialRequest)}
+                profileKeyVersion: deconstruct(profileKeyVersion),
+                profileKeyCredentialRequest: deconstruct(profileKeyCredentialRequest)
             }
         });
 
@@ -161,9 +161,9 @@ export class GatherClient {
     ): Promise<IGOperationResult> {
         return await this.transport.doRequest<IGOperationResult>({
             createEventRequest: {
-                groupPublicParams: {content: deconstruct(groupPublicParams)},
+                groupPublicParams: deconstruct(groupPublicParams),
                 content,
-                authCredentialPresentation: {content: deconstruct(creatorAuthCredentialPresentation)},
+                authCredentialPresentation: deconstruct(creatorAuthCredentialPresentation),
                 initialMembers
             }
         });
@@ -175,8 +175,8 @@ export class GatherClient {
     ): Promise<IGEventRecord> {
         return await this.transport.doRequest<IGEventRecord>({
             fetchEventRequest: {
-                groupIdentifier: {content: deconstruct(groupIdentifier)},
-                authCredentialPresentation: {content: deconstruct(authCredentialPresentation)}
+                groupIdentifier: deconstruct(groupIdentifier),
+                authCredentialPresentation: deconstruct(authCredentialPresentation)
             }
         });
     }
@@ -188,11 +188,9 @@ export class GatherClient {
     ): Promise<IGOperationResult> {
         return await this.transport.doRequest<IGOperationResult>({
             addEventMemberRequest: {
-                groupIdentifier: {content: deconstruct(groupIdentifier)},
-                authCredentialPresentation: {content: deconstruct(authCredentialPresentation)},
-                newMemberProfileKeyCredentialPresentation: {
-                    content: deconstruct(newMemberProfileKeyCredentialPresentation)
-                },
+                groupIdentifier: deconstruct(groupIdentifier),
+                authCredentialPresentation: deconstruct(authCredentialPresentation),
+                newMemberProfileKeyCredentialPresentation: deconstruct(newMemberProfileKeyCredentialPresentation),
                 newMemberRole
             }
         });
@@ -204,8 +202,8 @@ export class GatherClient {
     ): Promise<IGOperationResult> {
         return await this.transport.doRequest<IGOperationResult>({
             setEventMemberStateRequest: {
-                groupIdentifier: {content: deconstruct(groupIdentifier)},
-                authCredentialPresentation: {content: deconstruct(authCredentialPresentation)},
+                groupIdentifier: deconstruct(groupIdentifier),
+                authCredentialPresentation: deconstruct(authCredentialPresentation),
                 newState
             }
         });
