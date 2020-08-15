@@ -1,0 +1,170 @@
+syntax = "proto2";
+import "google/protobuf/empty.proto";
+
+service GatherService {
+  rpc CreateUser(GCreateUserRequest) returns (GOperationResult);
+  rpc GetPublicParams(google.protobuf.Empty) returns (GServerInfo);
+  rpc GetAuthCredential(GAuthCredentialRequest) returns (GAuthCredentialResponse);
+  rpc GetProfileKeyCredential(GProfileKeyCredentialRequest) returns (GProfileKeyCredentialResponse);
+  rpc CreateEvent(GCreateEventRequest) returns (GOperationResult);
+  rpc FetchEvent(GFetchEventRequest) returns (GEventRecord);
+  rpc AddEventMember(GAddEventMemberRequest) returns (GOperationResult);
+  rpc SetEventMemberState(GSetEventMemberStateRequest) returns (GOperationResult);
+}
+
+message GatherRequest {
+  oneof request {
+    GCreateUserRequest createUserRequest = 1;
+    google.protobuf.Empty getPublicParamsRequest = 2;
+    GAuthCredentialRequest authCredentialRequest = 3;
+    GProfileKeyCredentialRequest profileKeyCredentialRequest = 4;
+    GCreateEventRequest createEventRequest = 5;
+    GFetchEventRequest fetchEventRequest = 6;
+    GAddEventMemberRequest addEventMemberRequest = 7;
+    GSetEventMemberStateRequest setEventMemberStateRequest = 8;
+  }
+}
+
+message GatherError {
+  required string error = 1;
+}
+
+message ZkUUID {
+  required string content = 1;
+}
+
+message ZkServerPublicParams {
+  required bytes content = 1;
+}
+
+message GServerInfo {
+  required ZkServerPublicParams publicParams = 1;
+}
+
+message GOperationResult {
+  required bool success = 1;
+  optional string err = 2;
+}
+
+message ZkProfileKeyVersion {
+  required bytes content = 1;
+}
+
+message ZkProfileKeyCommitment {
+  required bytes content = 1;
+}
+
+message GProfileRecord {
+  required bytes content = 1;
+  required ZkProfileKeyVersion profileKeyVersion = 2;
+  required ZkProfileKeyCommitment profileKeyCommitment = 3;
+}
+
+message GUserRecord {
+  required ZkUUID uuid = 1;
+  required bytes passwordHash = 2;
+  required GProfileRecord profile = 3;
+}
+
+message GCreateUserRequest {
+  required ZkUUID uuid = 1;
+  required bytes passwordHash = 2;
+  required GProfileRecord profile = 3;
+}
+
+message GAuthCredentialRequest {
+  required ZkUUID uuid = 1;
+  required bytes passwordHash = 2;
+}
+
+message GAuthCredentialResponse {
+  message ZkAuthCredentialResponse {
+    required bytes content = 1;
+  }
+  required ZkAuthCredentialResponse authCredentialResponse = 1;
+}
+
+
+message GProfileKeyCredentialRequest {
+  message ZkProfileKeyCredentialRequest {
+    required bytes content = 1;
+  }
+  required ZkUUID uuid = 1;
+  required ZkProfileKeyVersion profileKeyVersion = 2;
+  required ZkProfileKeyCredentialRequest profileKeyCredentialRequest = 3;
+}
+
+
+message GProfileKeyCredentialResponse {
+  message ZkProfileKeyCredentialResponse {
+    required bytes content = 1;
+  }
+  required ZkProfileKeyCredentialResponse profileKeyCredentialResponse = 1;
+}
+
+message ZkProfileKeyCredentialPresentation {
+  required bytes content = 1;
+}
+
+message GEventMemberRecord {
+  required ZkProfileKeyCredentialPresentation profileKeyCredentialPresentation = 1;
+  required GEventMemberRole role = 2;
+  optional bytes state = 3;
+}
+
+message ZkGroupPublicParams {
+  required bytes content = 1;
+}
+
+message ZkAuthCredentialPresentation {
+  required bytes content = 1;
+}
+
+message GCreateEventRequest {
+  required ZkGroupPublicParams groupPublicParams = 1;
+  required bytes content = 2;
+  required ZkAuthCredentialPresentation authCredentialPresentation = 3;
+  repeated GEventMemberRecord initialMembers = 4;
+}
+
+message ZkGroupIdentifier {
+  required bytes content = 1;
+}
+
+message GFetchEventRequest {
+  required ZkGroupIdentifier groupIdentifier = 1;
+  required ZkAuthCredentialPresentation authCredentialPresentation = 2;
+}
+
+message GEventRecord {
+  required ZkGroupIdentifier groupIdentifier = 1;
+  required ZkGroupPublicParams groupPublicParams = 2;
+  required bytes content = 3;
+  repeated GEventMemberRecord members = 4;
+}
+
+message GAddEventMemberRequest {
+  required ZkGroupIdentifier groupIdentifier = 1;
+  required ZkAuthCredentialPresentation authCredentialPresentation = 2;
+  required ZkProfileKeyCredentialPresentation newMemberProfileKeyCredentialPresentation = 3;
+  required GEventMemberRole newMemberRole = 4;
+}
+
+message GSetEventMemberStateRequest {
+  required ZkGroupIdentifier groupIdentifier = 1;
+  required ZkAuthCredentialPresentation authCredentialPresentation = 2;
+  required bytes newState = 3;
+}
+
+
+enum GEventMemberAttendance {
+  UNKNOWN = 0;
+  GOING = 1;
+  NOT_GOING = 2;
+}
+
+enum GEventMemberRole {
+  CREATOR = 0;
+  ADMIN = 1;
+  DEFAULT = 2;
+}
