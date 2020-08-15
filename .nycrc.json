@@ -1,0 +1,7 @@
+{
+  "exclude": [
+    "src/messages.js",
+    "src/messages.d.ts",
+    "tests"
+  ]
+}
