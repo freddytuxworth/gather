@@ -1,5 +1,5 @@
 {
-  "name": "lib-gather",
+  "name": "@gather/core",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

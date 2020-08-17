@@ -1,0 +1,7 @@
+{
+   "private": true,
+   "name": "example-monorepo",
+   "workspaces": ["core", "http"],
+   "scripts": {}
+}
+
