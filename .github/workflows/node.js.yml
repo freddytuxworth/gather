@@ -10,7 +10,10 @@ on:
     branches: [ master, develop ]
 
 jobs:
-  build:
+  core:
+    defaults:
+      run:
+        working-directory: core
 
     runs-on: ubuntu-latest
 
