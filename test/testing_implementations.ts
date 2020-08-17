@@ -1,17 +1,18 @@
 import {ServerSecretParams} from "zkgroup";
 import {
     GatherError,
-    GatherRequest,
-    GEventRecord,
+    GatherRequest, GAuthCredentialResponse,
+    GEventRecord, GOperationResult, GProfileKeyCredentialResponse, GServerInfo,
     GUserRecord,
     IGatherRequest,
     IGEventRecord,
     IGUserRecord
 } from "../src/messages";
-import {GatherResponse, GatherStorage, GGroupIdentifier} from "../src/types";
+import {BinaryTransport, GatherResponse, GatherStorage, GGroupIdentifier} from "../src/types";
 import {typedArraysEqual} from "../src/util";
 import {GatherTransport} from "../src/types";
 import GatherServer from "../src/server";
+import axios, {AxiosInstance} from "axios";
 
 export function serializingLayer(transport: GatherTransport): GatherTransport {
     return {
@@ -88,44 +89,81 @@ export class InMemoryStorage implements GatherStorage {
 
 }
 
-// export class GatherHttpTransport implements GatherTransport {
-//     private readonly apiClient: AxiosInstance;
-//
-//     constructor(baseUrl: string) {
-//         this.apiClient = axios.create({
-//             baseURL: baseUrl,
-//             responseType: 'json',
-//             headers: {
-//                 'Content-Type': 'application/json'
-//             }
-//         });
-//     }
-//
-//     private static decodeResponseForRequest(request: IGatherRequest, response: Uint8Array): GatherResponse {
-//         const result =
-//         if (request.getPublicParamsRequest)
-//             return GServerInfo.decode(response);
-//         if (request.createUserRequest)
-//             return GOperationResult.decode(response);
-//         if (request.authCredentialRequest)
-//             return GAuthCredentialResponse.decode(response);
-//         if (request.profileKeyCredentialRequest)
-//             return GProfileKeyCredentialResponse.decode(response);
-//         if (request.createEventRequest)
-//             return GOperationResult.decode(response);
-//         if (request.fetchEventRequest)
-//             return GEventRecord.decode(response);
-//         if (request.addEventMemberRequest)
-//             return GOperationResult.decode(response);
-//         if (request.setEventMemberStateRequest)
-//             return GOperationResult.decode(response);
-//         throw new Error("Didn't know what response to expect.");
-//     }
-//
-//     doRequest<T extends GatherResponse>(request: IGatherRequest): Promise<T> {
-//         const encoded = GatherRequest.encode(request).finish();
-//         return this.apiClient.post<Uint8Array>("/api", encoded, {responseType: "arraybuffer"})
-//             .then(response => response.data)
-//             .then(data => GatherHttpTransport.decodeResponseForRequest(request, data) as unknown as T);
-//     }
-// }
+export class EncodedTransport implements GatherTransport {
+    private readonly binaryTransport: BinaryTransport;
+
+    constructor(binaryTransport: BinaryTransport) {
+        this.binaryTransport = binaryTransport;
+    }
+
+    private static decodeResponseForRequest(request: IGatherRequest, response: Uint8Array): GatherResponse {
+        if (request.getPublicParamsRequest)
+            return GServerInfo.decode(response);
+        if (request.createUserRequest)
+            return GOperationResult.decode(response);
+        if (request.authCredentialRequest)
+            return GAuthCredentialResponse.decode(response);
+        if (request.profileKeyCredentialRequest)
+            return GProfileKeyCredentialResponse.decode(response);
+        if (request.createEventRequest)
+            return GOperationResult.decode(response);
+        if (request.fetchEventRequest)
+            return GEventRecord.decode(response);
+        if (request.addEventMemberRequest)
+            return GOperationResult.decode(response);
+        if (request.setEventMemberStateRequest)
+            return GOperationResult.decode(response);
+        throw new Error("Didn't know what response to expect.");
+    }
+
+    async doRequest<T extends GatherResponse>(request: IGatherRequest): Promise<T> {
+        const encoded = GatherRequest.encode(request).finish();
+        const rawResponse = await this.binaryTransport.doRequest(encoded);
+        if (GatherError.verify(rawResponse))
+            throw new Error(GatherError.decode(rawResponse).error);
+
+        return EncodedTransport.decodeResponseForRequest(request, rawResponse) as T;
+    }
+}
+
+export type GatherFrontend = {
+    handleRequest: (...args: any) => Promise<GatherResponse | GatherError>;
+}
+
+export class EncodedFrontend implements GatherFrontend {
+    private readonly server: GatherServer;
+
+    constructor(server: GatherServer) {
+        this.server = server;
+    }
+
+    async handleRequest(rawRequest: Uint8Array): Promise<GatherResponse | GatherError> {
+        if(GatherRequest.verify(rawRequest)) {
+            return this.server.handleRequest(GatherRequest.decode(rawRequest));
+        }
+        return new GatherError({ error: "Invalid request" });
+    }
+
+}
+
+export class BinaryHttpTransport implements BinaryTransport {
+    private readonly apiClient: AxiosInstance;
+    private readonly path: string;
+
+    constructor(baseUrl: string, path: string) {
+        this.path = path;
+        this.apiClient = axios.create({
+            baseURL: baseUrl,
+            responseType: 'arraybuffer',
+            headers: {'Content-Type': 'application/json'}
+        });
+    }
+
+    doRequest(request: Uint8Array): Promise<Uint8Array> {
+        return this.apiClient.post<Uint8Array>(this.path, request)
+            .then(response => response.data);
+    }
+}
+
+export const GatherHttpTransport = (baseUrl: string, path: string) =>
+    new EncodedTransport(new BinaryHttpTransport(baseUrl, path));

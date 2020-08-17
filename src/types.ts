@@ -37,6 +37,9 @@ export type GatherTransport = {
     doRequest: <T extends GatherResponse>(request: IGatherRequest) => Promise<T>
 };
 
+export type BinaryTransport = {
+    doRequest: (request: Uint8Array) => Promise<Uint8Array>
+}
 
 // import {
 //     AuthCredential,
