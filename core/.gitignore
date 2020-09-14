@@ -104,5 +104,4 @@ dist
 .tern-port
 
 build/
-src/messages.d.ts
-src/messages.js
+src/proto/*
