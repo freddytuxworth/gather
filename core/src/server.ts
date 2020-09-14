@@ -13,10 +13,7 @@ import {
 import {areEqual, construct, deconstruct, maybeConstruct, nowRedemptionTime, typedArraysEqual} from "./util";
 
 import ProfileKeyCredentialRequest from "zkgroup/dist/zkgroup/profiles/ProfileKeyCredentialRequest";
-import {
-    AsyncGatherService,
-    GatherStorage
-} from "./types";
+import {AsyncGatherService, GatherStorage} from "./types";
 import {
     GAddEventMemberRequest,
     GAuthCredentialRequest,
@@ -32,8 +29,6 @@ import {
     GSetEventMemberStateRequest,
     GUserRecord
 } from "./proto/gather_pb";
-import {IGatherServiceServer} from "./proto/gather_grpc_pb";
-import {sendUnaryData, ServerUnaryCall} from "@grpc/grpc-js";
 import {Empty} from "google-protobuf/google/protobuf/empty_pb";
 
 export default class GatherServer implements AsyncGatherService {
