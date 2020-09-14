@@ -16,11 +16,9 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.1.6",
     "@grpc/proto-loader": "^0.5.5",
-    "axios": "^0.19.2",
     "google-protobuf": "^3.13.0",
     "grpc-tools": "^1.9.1",
     "grpc_tools_node_protoc_ts": "^4.1.4",
-    "mali": "^0.21.0",
     "zkgroup": "https://github.com/signalapp/signal-zkgroup-node/"
   },
   "devDependencies": {
