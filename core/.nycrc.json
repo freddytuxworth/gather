@@ -1,6 +1,6 @@
 {
   "exclude": [
-    "src/messages.js",
+    "src/proto",
     "src/messages.d.ts",
     "test/*"
   ]

@@ -6,12 +6,8 @@ import * as grpc from "@grpc/grpc-js";
 import * as gather_pb from "./proto/gather_pb";
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 
-export type GatherServerApi = {
+export type AsyncGatherService = {
     [P in keyof IGatherServiceServer]: IGatherServiceServer[P] extends handleUnaryCall<infer Req, infer Res> ? (request: Req) => Promise<Res> : never;
-}
-
-export type GatherClientApi = {
-    [P in keyof IGatherServiceService]: IGatherServiceService[P] extends grpc.MethodDefinition<infer Req, infer Res> ? (request: Req) => Promise<Res> : never;
 }
 
 export type GatherStorage = {

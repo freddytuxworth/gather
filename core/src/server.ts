@@ -14,7 +14,7 @@ import {areEqual, construct, deconstruct, maybeConstruct, nowRedemptionTime, typ
 
 import ProfileKeyCredentialRequest from "zkgroup/dist/zkgroup/profiles/ProfileKeyCredentialRequest";
 import {
-    GatherServerApi,
+    AsyncGatherService,
     GatherStorage
 } from "./types";
 import {
@@ -36,7 +36,7 @@ import {IGatherServiceServer} from "./proto/gather_grpc_pb";
 import {sendUnaryData, ServerUnaryCall} from "@grpc/grpc-js";
 import {Empty} from "google-protobuf/google/protobuf/empty_pb";
 
-export default class GatherServer implements GatherServerApi {
+export default class GatherServer implements AsyncGatherService {
     private readonly storage: GatherStorage;
     private readonly secretParams: ServerSecretParams;
     private readonly publicParams: ServerPublicParams;
@@ -205,29 +205,5 @@ export default class GatherServer implements GatherServerApi {
         await this.storage.updateEvent(event.getGroupidentifier_asU8(), event);
         return new Empty();
     }
-
-}
-
-export class GatherServerWrapper implements IGatherServiceServer {
-
-    constructor(private readonly server: GatherServer) {};
-
-    private depromise<Req, Res>(promised: (request: Req) => Promise<Res>): (call: ServerUnaryCall<Req, Res>,
-                                                                            callback: sendUnaryData<Res>) => void {
-        return (call, callback) => {
-            promised.bind(this.server)(call.request!)
-                .then(value => callback(null, value))
-                .catch((error: Error) => callback(error, null))
-        };
-    }
-
-    addEventMember = this.depromise(this.server.addEventMember);
-    createEvent = this.depromise(this.server.createEvent);
-    createUser = this.depromise(this.server.createUser);
-    fetchEvent = this.depromise(this.server.fetchEvent);
-    getAuthCredential = this.depromise(this.server.getAuthCredential);
-    getProfileKeyCredential = this.depromise(this.server.getProfileKeyCredential);
-    getServerInfo = this.depromise(this.server.getServerInfo);
-    setEventMemberState = this.depromise(this.server.setEventMemberState);
 
 }
