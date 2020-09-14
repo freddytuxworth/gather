@@ -4,28 +4,39 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build-proto": "pbjs -t static-module -w commonjs -o src/messages.js src/messages.proto && pbts -o src/messages.d.ts src/messages.js",
-    "test": "nyc mocha -r ts-node/register test/*"
+    "build-proto-js": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./src/proto --grpc_out=grpc_js:./src/proto --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` gather.proto",
+    "build-proto-ts": "grpc_tools_node_protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --grpc_out=grpc_js:./src/proto --ts_out=./src/proto gather.proto",
+    "build-proto": "yarn run build-proto-js && yarn run build-proto-ts",
+    "serve": "ts-node test/serve.ts",
+    "cli": "ts-node test/get.ts",
+    "test": "nyc mocha -r ts-node/register test/*.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@grpc/grpc-js": "^1.1.6",
+    "@grpc/proto-loader": "^0.5.5",
+    "axios": "^0.19.2",
+    "google-protobuf": "^3.13.0",
+    "grpc-tools": "^1.9.1",
+    "grpc_tools_node_protoc_ts": "^4.1.4",
+    "mali": "^0.21.0",
+    "zkgroup": "https://github.com/signalapp/signal-zkgroup-node/"
+  },
+  "devDependencies": {
     "@types/chai": "^4.2.12",
     "@types/chai-as-promised": "^7.1.3",
+    "@types/google-protobuf": "^3.7.3",
     "@types/mocha": "^8.0.2",
+    "@types/node": "^14.0.27",
     "@types/ref-napi": "^1.4.1",
-    "axios": "^0.19.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "mocha": "^8.1.1",
     "nyc": "^15.1.0",
     "protobufjs": "^6.10.1",
     "source-map-support": "^0.5.19",
-    "zkgroup": "https://github.com/signalapp/signal-zkgroup-node/"
-  },
-  "devDependencies": {
-    "@types/node": "^14.0.27",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.7"
+    "typescript": "^4.0.2"
   }
 }

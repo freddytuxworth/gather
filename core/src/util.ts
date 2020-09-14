@@ -1,14 +1,11 @@
 import {createHash, randomBytes} from "crypto";
-import {ByteArray, FFICompatArray, FFICompatArrayType, fromUUID, toUUID} from "zkgroup";
-import {UUID_LENGTH, UUIDType} from "zkgroup/dist/zkgroup/internal/UUIDUtil";
+import {ByteArray, FFICompatArray, FFICompatArrayType, toUUID} from "zkgroup";
+import {UUID_LENGTH} from "zkgroup/dist/zkgroup/internal/UUIDUtil";
 import TypedArray = NodeJS.TypedArray;
-import {GOperationResult} from "./messages";
 
 export type SubType<Base, Condition> = Pick<Base, {
     [Key in keyof Base]: Base[Key] extends Condition ? Key : never
 }[keyof Base]>;
-
-export const operationSuccess: GOperationResult = new GOperationResult({success: true, err: undefined});
 
 export const hashString = (input: string) => createHash('sha256').update(input).digest();
 

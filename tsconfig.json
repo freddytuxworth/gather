@@ -2,17 +2,10 @@
   "compilerOptions": {
     "target": "es2015",
     "module": "commonjs",
-    "rootDir": ".",
-    "outDir": "./build",
     "esModuleInterop": true,
     "declaration": true,
     "strict": true,
-    "inlineSourceMap": true
-  },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "inlineSourceMap": true,
+    "declaration": true
+  }
 }

@@ -1,41 +1,21 @@
 syntax = "proto2";
+package gather;
+
 import "google/protobuf/empty.proto";
 
 service GatherService {
-  rpc CreateUser(GCreateUserRequest) returns (GOperationResult);
-  rpc GetPublicParams(google.protobuf.Empty) returns (GServerInfo);
+  rpc CreateUser(GUserRecord) returns (google.protobuf.Empty);
+  rpc GetServerInfo(google.protobuf.Empty) returns (GServerInfo);
   rpc GetAuthCredential(GAuthCredentialRequest) returns (GAuthCredentialResponse);
   rpc GetProfileKeyCredential(GProfileKeyCredentialRequest) returns (GProfileKeyCredentialResponse);
-  rpc CreateEvent(GCreateEventRequest) returns (GOperationResult);
+  rpc CreateEvent(GCreateEventRequest) returns (google.protobuf.Empty);
   rpc FetchEvent(GFetchEventRequest) returns (GEventRecord);
-  rpc AddEventMember(GAddEventMemberRequest) returns (GOperationResult);
-  rpc SetEventMemberState(GSetEventMemberStateRequest) returns (GOperationResult);
-}
-
-message GatherRequest {
-  oneof request {
-    GCreateUserRequest createUserRequest = 1;
-    google.protobuf.Empty getPublicParamsRequest = 2;
-    GAuthCredentialRequest authCredentialRequest = 3;
-    GProfileKeyCredentialRequest profileKeyCredentialRequest = 4;
-    GCreateEventRequest createEventRequest = 5;
-    GFetchEventRequest fetchEventRequest = 6;
-    GAddEventMemberRequest addEventMemberRequest = 7;
-    GSetEventMemberStateRequest setEventMemberStateRequest = 8;
-  }
-}
-
-message GatherError {
-  required string error = 1;
+  rpc AddEventMember(GAddEventMemberRequest) returns (google.protobuf.Empty);
+  rpc SetEventMemberState(GSetEventMemberStateRequest) returns (google.protobuf.Empty);
 }
 
 message GServerInfo {
   required bytes publicParams = 1;
-}
-
-message GOperationResult {
-  required bool success = 1;
-  optional string err = 2;
 }
 
 message GProfileRecord {
@@ -50,11 +30,9 @@ message GUserRecord {
   required GProfileRecord profile = 3;
 }
 
-message GCreateUserRequest {
-  required string uuid = 1;
-  required bytes passwordHash = 2;
-  required GProfileRecord profile = 3;
-}
+//message GCreateUserRequest {
+//  required GUserRecord userRecord = 1;
+//}
 
 message GAuthCredentialRequest {
   required string uuid = 1;
